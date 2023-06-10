@@ -1,10 +1,10 @@
 use std::process::Command;
 
 fn main() -> Result<(), ()> {
-    libcam("test.jpeg")
+    capture_image("test.jpeg")
 }
 
-fn libcam(file_name: &str) -> Result<(), ()> {
+fn capture_image(file_name: &str) -> Result<(), ()> {
     let libcam = Command::new("libcamera-jpeg")
         .args(["-o", file_name])
         .output();
