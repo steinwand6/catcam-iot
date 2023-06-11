@@ -1,28 +1,48 @@
-use std::{env, fs::File, io::Read, process::Command};
+use std::{env, error::Error, fmt::Display, fs::File, io::Read, process::Command};
 
-fn main() -> Result<(), ()> {
+#[derive(Debug)]
+enum ImageCaptureError {
+    FileOpenError(String),
+    FileReadError(String),
+    CommandExecutionError(String),
+}
+
+impl Error for ImageCaptureError {}
+
+impl Display for ImageCaptureError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use ImageCaptureError::*;
+        match self {
+            FileOpenError(msg) => write!(f, "Failed to open file: {msg}"),
+            FileReadError(msg) => write!(f, "Failed to read file: {msg}"),
+            CommandExecutionError(msg) => write!(f, "Failed to execute command: {msg}"),
+        }
+    }
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
     let bytes = get_image_bytes()?;
     println!("{:?}", bytes);
     Ok(())
 }
 
-fn get_image_bytes() -> Result<Vec<u8>, ()> {
+fn get_image_bytes() -> Result<Vec<u8>, ImageCaptureError> {
     let file_name = "capture.jpeg";
     capture_image(file_name)?;
     let mut image_file = match File::open(file_name) {
         Ok(f) => f,
-        Err(_e) => {
-            return Err(());
+        Err(e) => {
+            return Err(ImageCaptureError::FileOpenError(e.to_string()));
         }
     };
     let mut buf = Vec::new();
     match image_file.read_to_end(&mut buf) {
         Ok(_) => Ok(buf),
-        Err(_e) => Err(()),
+        Err(e) => Err(ImageCaptureError::FileReadError(e.to_string())),
     }
 }
 
-fn capture_image(file_name: &str) -> Result<(), ()> {
+fn capture_image(file_name: &str) -> Result<(), ImageCaptureError> {
     let libcam = Command::new("libcamera-jpeg")
         .args(["-o", file_name])
         .args(get_options())
@@ -31,7 +51,7 @@ fn capture_image(file_name: &str) -> Result<(), ()> {
         Ok(_) => println!("libcamera-jpeg: {}", file_name),
         Err(e) => {
             eprintln!("{:?}", e);
-            return Err(());
+            return Err(ImageCaptureError::CommandExecutionError(e.to_string()));
         }
     }
     Ok(())
