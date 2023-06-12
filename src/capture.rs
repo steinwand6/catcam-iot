@@ -44,7 +44,7 @@ fn capture_image(file_name: &str) -> Result<()> {
         .args(get_options())
         .output();
     match libcam {
-        Ok(_) => println!("libcamera-jpeg: {}", file_name),
+        Ok(_) => println!("libcamera-jpeg: {file_name}"),
         Err(e) => {
             eprintln!("{:?}", e);
             return Err(ImageCaptureError::CommandExecution(e.to_string()));
