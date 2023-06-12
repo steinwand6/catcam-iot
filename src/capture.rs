@@ -4,9 +4,9 @@ type Result<T> = std::result::Result<T, ImageCaptureError>;
 
 #[derive(Debug)]
 pub enum ImageCaptureError {
-    FileOpenError(String),
-    FileReadError(String),
-    CommandExecutionError(String),
+    FileOpen(String),
+    FileRead(String),
+    CommandExecution(String),
 }
 
 impl Error for ImageCaptureError {}
@@ -15,9 +15,9 @@ impl Display for ImageCaptureError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use ImageCaptureError::*;
         match self {
-            FileOpenError(msg) => write!(f, "Failed to open file: {msg}"),
-            FileReadError(msg) => write!(f, "Failed to read file: {msg}"),
-            CommandExecutionError(msg) => write!(f, "Failed to execute command: {msg}"),
+            FileOpen(msg) => write!(f, "Failed to open file: {msg}"),
+            FileRead(msg) => write!(f, "Failed to read file: {msg}"),
+            CommandExecution(msg) => write!(f, "Failed to execute command: {msg}"),
         }
     }
 }
@@ -28,13 +28,13 @@ pub fn get_image_bytes() -> Result<Vec<u8>> {
     let mut image_file = match File::open(file_name) {
         Ok(f) => f,
         Err(e) => {
-            return Err(ImageCaptureError::FileOpenError(e.to_string()));
+            return Err(ImageCaptureError::FileOpen(e.to_string()));
         }
     };
     let mut buf = Vec::new();
     match image_file.read_to_end(&mut buf) {
         Ok(_) => Ok(buf),
-        Err(e) => Err(ImageCaptureError::FileReadError(e.to_string())),
+        Err(e) => Err(ImageCaptureError::FileRead(e.to_string())),
     }
 }
 
@@ -47,7 +47,7 @@ fn capture_image(file_name: &str) -> Result<()> {
         Ok(_) => println!("libcamera-jpeg: {}", file_name),
         Err(e) => {
             eprintln!("{:?}", e);
-            return Err(ImageCaptureError::CommandExecutionError(e.to_string()));
+            return Err(ImageCaptureError::CommandExecution(e.to_string()));
         }
     }
     Ok(())
