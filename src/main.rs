@@ -1,6 +1,6 @@
 use rppal::gpio::{Gpio, Trigger};
 use rumqtt::{MqttClient, MqttOptions, QoS};
-use std::{env, error::Error};
+use std::{env, error::Error, fs::read};
 
 mod capture;
 
@@ -37,9 +37,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn get_mqtt_options() -> MqttOptions {
-    let ca = include_bytes!("../cert/AmazonRootCA1.pem").to_vec();
-    let client_crt = include_bytes!("../cert/cat-camera.crt").to_vec();
-    let client_key = include_bytes!("../cert/private.key").to_vec();
+    let ca_path = env::var("AWS_IOT_CA_PATH").unwrap();
+    let client_crt_path = env::var("AWS_IOT_CLIENT_CERT_PATH").unwrap();
+    let client_key_path = env::var("AWS_IOT_CLIENT_KEY_PATH").unwrap();
+    let ca = read(ca_path).unwrap();
+    let client_crt = read(client_crt_path).unwrap();
+    let client_key = read(client_key_path).unwrap();
+
     let mqtt_host = "cat-camera";
     let endpoint = env::var("AWS_IOT_ENDPOINT").unwrap();
 
