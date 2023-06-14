@@ -6,6 +6,12 @@ mod capture;
 
 const GPIO_NO: u8 = 27;
 
+const MQTT_HOST: &str = "cat-camera";
+const MQTTS_PORT: u16 = 8883;
+const MQTT_KEEP_ALIVE: u16 = 30;
+const MQTT_RECONNECT_INTERVAL: u64 = 60;
+const MQTT_PUB_TOPIC: &str = "cat-camera/capture";
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut pir = Gpio::new()?.get(GPIO_NO)?.into_input();
     pir.set_interrupt(Trigger::RisingEdge)?;
@@ -23,7 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let qos = QoS::AtLeastOnce;
                 let retain = false;
                 mqtt_client
-                    .publish("cat-camera/capture", qos, retain, payload)
+                    .publish(MQTT_PUB_TOPIC, qos, retain, payload)
                     .unwrap();
             }
             e => {
@@ -44,12 +50,11 @@ fn get_mqtt_options() -> MqttOptions {
     let client_crt = read(client_crt_path).unwrap();
     let client_key = read(client_key_path).unwrap();
 
-    let mqtt_host = "cat-camera";
     let endpoint = env::var("AWS_IOT_ENDPOINT").unwrap();
 
-    MqttOptions::new(mqtt_host, endpoint, 8883)
+    MqttOptions::new(MQTT_HOST, endpoint, MQTTS_PORT)
         .set_ca(ca)
         .set_client_auth(client_crt, client_key)
-        .set_keep_alive(10)
-        .set_reconnect_opts(rumqtt::ReconnectOptions::Always(5))
+        .set_keep_alive(MQTT_KEEP_ALIVE)
+        .set_reconnect_opts(rumqtt::ReconnectOptions::Always(MQTT_RECONNECT_INTERVAL))
 }
