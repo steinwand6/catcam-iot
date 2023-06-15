@@ -24,13 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(_) => {
                 let bytes = capture::get_image_bytes()?;
                 println!("{:?}", bytes);
-
-                let payload = "hello AWS IoT!";
-                let qos = QoS::AtLeastOnce;
-                let retain = false;
-                mqtt_client
-                    .publish(MQTT_PUB_TOPIC, qos, retain, payload)
-                    .unwrap();
+                publish_mqtt(&mut mqtt_client, bytes);
             }
             e => {
                 eprint!("{:?}", e);
@@ -40,6 +34,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+fn publish_mqtt<T: Into<Vec<u8>>>(client: &mut MqttClient, payload: T) {
+    let qos = QoS::AtLeastOnce;
+    let retain = false;
+    client
+        .publish(MQTT_PUB_TOPIC, qos, retain, payload)
+        .unwrap();
 }
 
 fn get_mqtt_options() -> MqttOptions {
