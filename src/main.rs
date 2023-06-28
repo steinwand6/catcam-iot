@@ -48,7 +48,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         match pir.poll_interrupt(true, None) {
             Ok(_) => {
                 let bytes = capture::get_image_bytes()?;
-                println!("{:?}", bytes);
                 publish_mqtt(&mut mqtt_client, bytes)?;
             }
             e => {
