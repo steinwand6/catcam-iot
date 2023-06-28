@@ -6,7 +6,7 @@ mod capture;
 
 const GPIO_NO: u8 = 27;
 
-const MQTT_HOST: &str = "cat-camera";
+const MQTT_HOST: &str = "raspi1/cat-camera";
 const MQTTS_PORT: u16 = 8883;
 const MQTT_KEEP_ALIVE: u16 = 30;
 const MQTT_RECONNECT_INTERVAL: u64 = 60;
